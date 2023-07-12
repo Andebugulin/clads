@@ -59,14 +59,15 @@ def parse_images(url):
     driver.quit()
 
 
-
 import re
+
 
 def sanitize_filename(filename):
     # Remove special characters and replace spaces with underscores
     filename = re.sub(r'[^\w\s-]', '', filename)
     filename = re.sub(r'\s+', '_', filename)
     return filename
+
 
 def download_image(url):
     global IMAGE_COUNTER
@@ -85,12 +86,12 @@ def download_image(url):
     filename = url.split('/')[-1]  # Extract filename from URL
     filename = sanitize_filename(filename)
 
-    with open(IMAGE_FOLDER_PATH + filename + '_' + (8 - len(str(IMAGE_COUNTER))) * '0' + str(IMAGE_COUNTER) + '.' + extension, 'wb') as f:
+    with open(IMAGE_FOLDER_PATH + filename + '_' + (8 - len(str(IMAGE_COUNTER))) * '0' + str(
+            IMAGE_COUNTER) + '.' + extension, 'wb') as f:
         f.write(response.content)
 
     IMAGE_COUNTER += 1
     print(f"Downloaded: {filename}.{extension}")
-
 
 
 # Usage example
