@@ -1,6 +1,11 @@
 import os
 import cv2
 
+
+
+
+############# used #################################################################
+
 image_directory = 'images'
 correct_images_directory = 'images/correct_images'
 

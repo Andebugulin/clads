@@ -6,6 +6,7 @@ from segment_anything import sam_model_registry
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 MODEL_TYPE = "vit_h"
@@ -17,14 +18,16 @@ sam.to(device=DEVICE)
 mask_predictor = SamPredictor(sam)
 
 
-def show_mask(mask, ax, random_color=False):
+def show_mask(mask, ax, image_name, random_color=False):
     if random_color:
         color = np.concatenate([np.random.random(3), np.array([0.6])], axis=0)
     else:
         color = np.array([30 / 255, 144 / 255, 255 / 255, 0.6])
     h, w = mask.shape[-2:]
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
-    ax.imshow(mask_image)
+    mask_path = 'masks\\' + image_name.replace('.jpg', '').replace('.png', '')
+    np.save(mask_path, mask_image)
+    # ax.imshow(mask_image)
 
 
 def show_box(box, ax):
@@ -45,7 +48,8 @@ def resize_box(box, original_width, original_height, new_width, new_height):
     return resized_box.astype(int)
 
 
-def process_image_with_resizing(image_path, box, target_width, target_height):
+def process_image_with_resizing(image_path, box, target_width, target_height, image_name):
+    print(image_path)
     image_bgr = cv2.imread(image_path)
     if image_bgr is None:
         print("Failed to read the image at path:", image_path)
@@ -63,34 +67,42 @@ def process_image_with_resizing(image_path, box, target_width, target_height):
 
     # Display the results
 
-    plt.figure(figsize=(10, 10))
-    plt.imshow(resized_image)
-    show_mask(masks[0], plt.gca())
-    show_box(resized_box, plt.gca())
-    plt.axis('off')
-    plt.show()
+    # plt.figure(figsize=(10, 10))
+    # plt.imshow(resized_image)
+    show_mask(masks[0], plt.gca(), image_name)
+    # show_box(resized_box, plt.gca())
+    # plt.axis('off')
+    # plt.show()
 
 
 csv_file = r'bounding_boxes.csv'
 with open(csv_file, "r") as file:
-    reader = csv.reader(file)
-    next(reader)  # Skip the header row
+    reader = list(csv.reader(file))
+    header = reader.pop(0)  # Remove the header row
 
-    for row in reader:
-        first_column_value = row[0]
-        left, top, right, bottom = map(int, row[1:5])
+    # Use tqdm without total argument
+    with tqdm() as pbar:
+        for row in reader:
+            try:
+                first_column_value = row[0]
+                left, top, right, bottom = map(int, row[1:5])
 
-        IMAGE_PATH = r'images\correct_images\\' + first_column_value
+                IMAGE_PATH = r'images\correct_images\\' + first_column_value
 
-        if not os.path.exists(IMAGE_PATH):
-            print("Image file does not exist at path:", IMAGE_PATH)
-            continue
+                if not os.path.exists(IMAGE_PATH):
+                    print("Image file does not exist at path:", IMAGE_PATH)
+                    continue
 
-        print('process_starts')
-        target_width = 400  # Set the desired width
-        target_height = 400  # Set the desired height
+                print('process_starts')
+                target_width = 400  # Set the desired width
+                target_height = 400  # Set the desired height
 
-        process_image_with_resizing(IMAGE_PATH, [left, top, right, bottom], target_width, target_height)
+                process_image_with_resizing(IMAGE_PATH, [left, top, right, bottom], target_width, target_height,
+                                            first_column_value)
 
-        # Break the loop if you only want to process the first row that has a valid image
-        break
+                # Break the loop if you only want to process the first row that has a valid image
+                # break
+                pbar.update(1)
+            except:
+                pbar.update(1)
+                continue

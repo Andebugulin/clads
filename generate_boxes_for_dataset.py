@@ -2,6 +2,12 @@ import os
 import csv
 import cv2
 
+
+
+#### used already
+################################
+################################
+################################
 data_dir = "images/correct_images"
 output_file = "bounding_boxes.csv"
 

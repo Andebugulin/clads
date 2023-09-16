@@ -5,6 +5,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import requests
 
+### used already
+################################
+################################
+################################
+
 IMAGE_COUNTER = 0
 IMAGE_FOLDER_PATH = r'images/'
 
